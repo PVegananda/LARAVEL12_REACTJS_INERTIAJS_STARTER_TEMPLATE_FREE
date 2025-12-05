@@ -6,6 +6,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use App\Http\Middleware\IsAdmin;
+
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,14 +16,21 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->encryptCookies(except: ['appearance']);
+    $middleware->encryptCookies(except: ['appearance']);
 
-        $middleware->web(append: [
-            HandleAppearance::class,
-            HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
-        ]);
+    // ✅ MIDDLEWARE GLOBAL WEB
+    $middleware->web(append: [
+        HandleAppearance::class,
+        HandleInertiaRequests::class,
+        AddLinkHeadersForPreloadedAssets::class,
+    ]);
+
+    // ✅ ALIAS MIDDLEWARE (PENGGANTI Kernel.php)
+    $middleware->alias([
+        'isAdmin' => IsAdmin::class,
+    ]);
     })
+
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
