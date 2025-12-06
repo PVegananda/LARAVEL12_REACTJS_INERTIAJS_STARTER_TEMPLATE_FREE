@@ -1,66 +1,63 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PostAdminController;
-use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Admin\CategoryAdminController;
 use App\Http\Controllers\Admin\TagAdminController;
-
+use App\Http\Controllers\Api\PostController;
 
 // =============================
-// PUBLIC: Homepage
+// PUBLIC HOMEPAGE
 // =============================
 Route::get('/', function () {
     return Inertia::render('Home');
 });
 
-// LOGIN ADMIN (public)
-Route::get('/admin', function () {
+// =============================
+// ADMIN LOGIN PAGE
+// =============================
+Route::get('/admin/login', function () {
     return Inertia::render('Admin/Login');
-});
+})->name('admin.login');
 
 // =============================
-// ADMIN AREA (Protected)
-// PREFIX: /admin
-// NAME PREFIX: admin.
+// AUTO REDIRECT /admin
+// =============================
+Route::get('/admin', function () {
+    if (Auth::check() && Auth::user()->is_admin) {
+        return redirect()->route('admin.dashboard');
+    }
+    return redirect()->route('admin.login');
+})->name('admin.redirect');
+
+// =============================
+// ADMIN PROTECTED ROUTES
 // =============================
 Route::middleware(['auth', 'isAdmin'])
     ->prefix('admin')
     ->as('admin.')
     ->group(function () {
 
-        // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->name('dashboard');
 
-        // Posts CRUD
         Route::resource('posts', PostAdminController::class);
-
-        // Bulk delete
-        Route::post('posts/bulk-delete', [PostAdminController::class, 'bulkDelete'])
+        Route::post('/posts/bulk-delete', [PostAdminController::class, 'bulkDelete'])
             ->name('posts.bulk-delete');
 
-        // Profile
-        Route::get('/profile', [AdminProfileController::class, 'index'])
-            ->name('profile');
+        Route::get('/profile', [AdminProfileController::class, 'index'])->name('profile');
+        Route::put('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
 
-        Route::put('/profile', [AdminProfileController::class, 'update'])
-            ->name('profile.update');
-
-        // Categories CRUD
         Route::resource('categories', CategoryAdminController::class);
-
-        // Tags CRUD
         Route::resource('tags', TagAdminController::class);
     });
 
-// =============================
-// PUBLIC POSTS API
-// =============================
+// PUBLIC API POSTS
 Route::get('/posts', [PostController::class, 'index']);
 Route::post('/posts', [PostController::class, 'store']);
 

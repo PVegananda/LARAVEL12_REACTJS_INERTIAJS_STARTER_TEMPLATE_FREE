@@ -1,4 +1,3 @@
-// resources/js/pages/Admin/Categories/Index.tsx
 import { Head, Link, usePage, router } from "@inertiajs/react";
 import AdminLayout from "@/layouts/AdminLayout";
 import { useState } from "react";
@@ -14,95 +13,115 @@ interface Category {
 interface Props extends Record<string, any> {
   categories: {
     data: Category[];
-    links: { url: string | null; label: string; active: boolean }[];
+    links: any[];
   };
 }
 
+
 export default function Index() {
   const { categories } = usePage<Props>().props;
+
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   function confirmDelete() {
-    if (deleteId === null) return;
+    if (!deleteId) return;
     router.delete(`/admin/categories/${deleteId}`, {
       onSuccess: () => setDeleteId(null),
     });
   }
 
   return (
-    <AdminLayout title="Kategori">
-      <Head title="Kategori" />
+    <AdminLayout title="Kelola Kategori">
+      <Head title="Kelola Kategori" />
 
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-[#0A1A2F]">Kategori</h1>
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-[#0A1A2F]">
+          Kelola Kategori
+        </h1>
 
         <Link
           href="/admin/categories/create"
-          className="bg-[#0A1A2F] hover:bg-black text-white px-4 py-2 rounded-lg"
+          className="bg-[#0A1A2F] text-white px-5 py-2 rounded-xl shadow hover:bg-black"
         >
           + Tambah Kategori
         </Link>
       </div>
 
-      {/* TABLE */}
-      <div className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+      {/* TABLE WRAPPER */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+        {/* Table Header */}
+        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+          <span className="text-sm text-gray-600">
+            Total: {categories.data.length} kategori
+          </span>
+        </div>
+
         <table className="w-full">
-          <thead className="bg-gray-50 text-gray-600 text-sm">
-            <tr>
-              <th className="p-4">Nama</th>
-              <th className="p-4">Slug</th>
-              <th className="p-4">Tanggal</th>
-              <th className="p-4 text-right">Aksi</th>
+          <thead>
+            <tr className="text-left text-gray-600 text-xs uppercase tracking-wide bg-gray-50">
+              <th className="p-4 font-semibold">Nama</th>
+              <th className="p-4 font-semibold">Slug</th>
+              <th className="p-4 font-semibold">Dibuat</th>
+              <th className="p-4 font-semibold text-right">Aksi</th>
             </tr>
           </thead>
 
           <tbody className="divide-y divide-gray-100">
-            {categories?.data?.length === 0 && (
+            {categories.data.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center p-6 text-gray-500">
-                  Belum ada kategori.
+                <td colSpan={4} className="text-center p-8 text-gray-500">
+                  Tidak ada kategori.
                 </td>
               </tr>
+            ) : (
+              categories.data.map((cat) => (
+                <tr key={cat.id} className="hover:bg-gray-50 transition">
+                  <td className="p-4 font-medium text-[#0A1A2F]">
+                    {cat.name}
+                  </td>
+
+                  <td className="p-4 text-gray-600">{cat.slug}</td>
+
+                  <td className="p-4 text-gray-600">
+                    {new Date(cat.created_at).toLocaleDateString()}
+                  </td>
+
+                  <td className="p-4 text-right flex justify-end gap-3">
+
+                    {/* EDIT BUTTON */}
+                    <Link
+                      href={`/admin/categories/${cat.id}/edit`}
+                      className="px-3 py-1.5 text-sm rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
+                    >
+                      Edit
+                    </Link>
+
+                    {/* DELETE BUTTON */}
+                    <button
+                      onClick={() => setDeleteId(cat.id)}
+                      className="px-3 py-1.5 text-sm rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+                    >
+                      Hapus
+                    </button>
+                  </td>
+                </tr>
+              ))
             )}
-
-            {categories?.data?.map((cat: Category) => (
-              <tr key={cat.id} className="hover:bg-gray-50">
-                <td className="p-4">{cat.name}</td>
-                <td className="p-4 text-gray-600">{cat.slug}</td>
-                <td className="p-4 text-gray-600">
-                  {new Date(cat.created_at).toLocaleDateString()}
-                </td>
-
-                <td className="p-4 text-right flex justify-end gap-4">
-                  <Link
-                    href={`/admin/categories/${cat.id}/edit`}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    Edit
-                  </Link>
-
-                  <button
-                    onClick={() => setDeleteId(cat.id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    Hapus
-                  </button>
-                </td>
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>
 
       {/* PAGINATION */}
-      <div className="flex gap-2 mt-4">
-        {categories?.links?.map((link: any, i: number) => (
+      <div className="flex gap-2 mt-6">
+        {categories.links.map((link: any, i: number) => (
           <Link
             key={i}
             href={link.url ?? ""}
-            className={`px-3 py-1 rounded border text-sm ${
+            className={`px-4 py-2 rounded-lg text-sm border ${
               link.active
-                ? "bg-[#0A1A2F] text-white"
+                ? "bg-[#0A1A2F] text-white border-[#0A1A2F]"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
             }`}
             dangerouslySetInnerHTML={{ __html: link.label }}
@@ -110,6 +129,7 @@ export default function Index() {
         ))}
       </div>
 
+      {/* DELETE MODAL */}
       <DeleteModal
         show={deleteId !== null}
         onClose={() => setDeleteId(null)}

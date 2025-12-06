@@ -8,7 +8,11 @@ export default function AdminLogin() {
 
   function submit(e: any) {
     e.preventDefault();
-    post("/login");
+    post("/login", {
+      onSuccess: () => {
+        // backend sudah redirect intended() ke /admin/dashboard
+      },
+    });
   }
 
   return (
@@ -30,26 +34,24 @@ export default function AdminLogin() {
           <label className="block text-sm mb-1 text-gray-700">Email</label>
           <input
             type="email"
-            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0A1A2F] outline-none"
+            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0A1A2F]"
             placeholder="admin@gmail.com"
+            value={data.email}
             onChange={(e) => setData("email", e.target.value)}
           />
-          {errors.email && (
-            <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-          )}
+          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
         </div>
 
         <div className="mb-6">
           <label className="block text-sm mb-1 text-gray-700">Password</label>
           <input
             type="password"
-            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0A1A2F] outline-none"
+            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#0A1A2F]"
             placeholder="••••••••"
+            value={data.password}
             onChange={(e) => setData("password", e.target.value)}
           />
-          {errors.password && (
-            <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-          )}
+          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
         </div>
 
         <button
