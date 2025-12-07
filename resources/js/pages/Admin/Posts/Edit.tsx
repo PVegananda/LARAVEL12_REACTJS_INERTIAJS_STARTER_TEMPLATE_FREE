@@ -48,12 +48,23 @@ export default function Edit() {
     ta.dispatchEvent(new Event("input", { bubbles: true }));
     setData("content", ta.value);
   }
-
-  const addBold = () => insert("<b></b>");
-  const addItalic = () => insert("<i></i>");
-  const addHeading = (n: number) => insert(`<h${n}></h${n}>`);
-  const addList = () => insert("<ul>\n  <li></li>\n</ul>\n");
-  const addOrderedList = () => insert("<ol>\n  <li></li>\n</ol>\n");
+ /* ----------------------------------------------------
+        BASIC FORMAT BUTTONS
+    ---------------------------------------------------- */
+    function addParagraph() { insert("<p></p>\n"); }
+    function addUnderline() { insert("<u></u>"); }
+    function addAlignLeft() { insert(`<div style="text-align:left"></div>`); }
+    function addAlignCenter() { insert(`<div style="text-align:center"></div>`); }
+    function addAlignRight() { insert(`<div style="text-align:right"></div>`); }
+    function addAlignJustify() { insert(`<div style="text-align:justify"></div>`); }
+    function addQuote() { insert("<blockquote></blockquote>"); }
+    function addHR() { insert("<hr />"); }
+    function addCode() { insert("<code></code>"); }
+    function addCodeBlock() { insert("<pre><code></code></pre>"); }
+    function addBold() {insert("<b></b>");}
+    function addItalic() { insert("<i></i>");}
+    function addHeading(level: number) { insert(`<h${level}></h${level}>`);}
+    function addList() { insert("<ul>\n  <li></li>\n</ul>\n"); } function addOrderedList() { insert("<ol>\n  <li></li>\n</ol>\n");}
 
   const openPopup = (type: "link" | "image") =>
     setPopup({ type, visible: true });
@@ -114,7 +125,8 @@ export default function Edit() {
     e.preventDefault();
 
     postRequest(`/admin/posts/${post.id}`, {
-      forceFormData: true,
+    forceFormData: true,
+
 
       onSuccess: () => {
         showToast("Post berhasil diperbarui!");
@@ -197,36 +209,47 @@ export default function Edit() {
           <div>
             <label className="block mb-2 font-semibold">Thumbnail</label>
 
-            <div className="flex gap-4 items-start">
-              <div className="w-48 h-32 bg-gray-50 border border-gray-300 rounded-lg overflow-hidden">
+            <div className="flex flex-col items-start gap-3">
+              
+              {/* Preview */}
+              <div className="w-48 h-32 bg-gray-50 border border-gray-300 rounded-lg overflow-hidden flex items-center justify-center">
                 {preview ? (
                   <img src={preview} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="text-gray-400 text-sm p-4">Belum ada gambar</div>
+                  <span className="text-gray-400 text-sm">Belum ada gambar</span>
                 )}
               </div>
 
-              <div>
-                <label
-                  htmlFor="thumbnail"
-                  className="cursor-pointer bg-[#0A1A2F] hover:bg-black text-white px-4 py-2 rounded-lg text-sm"
-                >
-                  Ubah Gambar
-                </label>
+              {/* File input */}
+              <label
+                htmlFor="thumbnail"
+                className="cursor-pointer bg-[#0A1A2F] hover:bg-black text-white px-4 py-2 rounded-md text-sm shadow"
+              >
+                Pilih Gambar
+              </label>
 
-                <input
-                  id="thumbnail"
-                  name="thumbnail"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleThumbnail}
-                />
+              <input
+                id="thumbnail"
+                name="thumbnail"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] ?? null;
+                  setData("thumbnail", file);
 
-                {errors.thumbnail && <p className="text-red-500 text-sm">{errors.thumbnail}</p>}
-              </div>
+                  if (file) {
+                    setPreview(URL.createObjectURL(file));
+                  }
+                }}
+              />
+
+              {errors.thumbnail && (
+                <p className="text-sm text-red-500 mt-1">{errors.thumbnail}</p>
+              )}
             </div>
           </div>
+
 
           {/* CATEGORY */}
           <div>
@@ -279,30 +302,248 @@ export default function Edit() {
             )}
           </div>
 
-          {/* CONTENT */}
+          <div className="p-4 mb-6 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 space-y-2">
+
+            <h3 className="text-lg font-semibold">Panduan Penulisan Konten</h3>
+            <p className="text-sm">
+              Gunakan tombol-tombol di toolbar untuk memformat artikel agar lebih rapi dan mudah dibaca.  
+              Berikut fungsi masing-masing syntax:
+            </p>
+
+            <ul className="text-sm list-disc pl-5 space-y-1">
+              <li>
+                <b>P</b> – Membuat paragraf baru: <code>&lt;p&gt;...&lt;/p&gt;</code>
+              </li>
+              <li>
+                <b>B</b> – Teks tebal (Bold): <code>&lt;b&gt;...&lt;/b&gt;</code>
+              </li>
+              <li>
+                <b>I</b> – Teks miring (Italic): <code>&lt;i&gt;...&lt;/i&gt;</code>
+              </li>
+              <li>
+                <b>U</b> – Garis bawah (Underline): <code>&lt;u&gt;...&lt;/u&gt;</code>
+              </li>
+              <li>
+                <b>H1 / H2 / H3</b> – Judul besar, sedang, kecil  
+                <code>&lt;h1&gt;&lt;h2&gt;&lt;h3&gt;</code>
+              </li>
+              <li>
+                <b>• List</b> – Bullet list:  
+                <code>&lt;ul&gt;&lt;li&gt;Item&lt;/li&gt;&lt;/ul&gt;</code>
+              </li>
+              <li>
+                <b>1. List</b> – Numbered list:  
+                <code>&lt;ol&gt;&lt;li&gt;Item&lt;/li&gt;&lt;/ol&gt;</code>
+              </li>
+              <li>
+                <b>Left / Center / Right / Justify</b> – Mengatur perataan teks
+              </li>
+              <li>
+                <b>❝ Quote</b> – Menambahkan kutipan: <code>&lt;blockquote&gt;...&lt;/blockquote&gt;</code>
+              </li>
+              <li>
+                <b>HR</b> – Garis pemisah: <code>&lt;hr /&gt;</code>
+              </li>
+              <li>
+                <b>{"</>"} Code</b> – Menandai kode pendek: <code>&lt;code&gt;...&lt;/code&gt;</code>
+              </li>
+              <li>
+                <b>Code Block</b> – Blok kode:  
+                <code>&lt;pre&gt;&lt;code&gt;...&lt;/code&gt;&lt;/pre&gt;</code>
+              </li>
+              <li>
+                <b>Link</b> – Memasukkan hyperlink:  
+                <code>&lt;a href=&quot;URL&quot;&gt;Teks&lt;/a&gt;</code>
+              </li>
+              <li>
+                <b>🖼️ Image</b> – Menambahkan gambar:  
+                <code>&lt;img src=&quot;URL&quot; /&gt;</code>
+              </li>
+            </ul>
+
+            <p className="text-xs mt-3 text-blue-700">
+              Tips: Gunakan paragraf pendek, heading yang konsisten, dan gambar untuk membuat artikel lebih menarik.
+            </p>
+          </div>
+
+
+          {/* EDITOR */}
           <div>
-            <label className="block mb-2 font-semibold">Konten (HTML)</label>
+              <label className="block mb-2 font-semibold">Konten (HTML)</label>
 
-            {/* Toolbar */}
-            <div className="flex flex-wrap gap-2 p-3 bg-white border border-gray-300 rounded-t-xl">
-              <button type="button" onClick={addBold} className="btn-tool">Bold</button>
-              <button type="button" onClick={addItalic} className="btn-tool">Italic</button>
-              <button type="button" onClick={() => addHeading(1)} className="btn-tool">H1</button>
-              <button type="button" onClick={() => addHeading(2)} className="btn-tool">H2</button>
-              <button type="button" onClick={() => addList()} className="btn-tool">• List</button>
-              <button type="button" onClick={() => addOrderedList()} className="btn-tool">1. List</button>
-              <button type="button" onClick={() => openPopup("link")} className="btn-tool">Link</button>
-              <button type="button" onClick={() => openPopup("image")} className="btn-tool">Img</button>
-            </div>
+              {/* TOOLBAR */}
+              <div className="flex flex-wrap gap-2 p-3 bg-white border border-gray-300 rounded-t-xl">
 
-            <textarea
-              ref={textareaRef}
-              name="content"
-              value={data.content}
-              onChange={(e) => setData("content", e.target.value)}
-              className="w-full border border-gray-300 rounded-b-xl bg-white p-4 min-h-[300px] font-mono text-sm"
-            />
-            {errors.content && <p className="text-red-500 text-sm">{errors.content}</p>}
+                  {/* Paragraph */}
+                  <button
+                      type="button"
+                      onClick={addParagraph}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      P
+                  </button>
+
+                  {/* Bold */}
+                  <button
+                      type="button"
+                      onClick={addBold}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Bold
+                  </button>
+
+                  {/* Italic */}
+                  <button
+                      type="button"
+                      onClick={addItalic}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Italic
+                  </button>
+
+                  {/* Underline */}
+                  <button
+                      type="button"
+                      onClick={addUnderline}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Underline
+                  </button>
+
+                  {/* Headings */}
+                  <button
+                      type="button"
+                      onClick={() => addHeading(1)}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      H1
+                  </button>
+                  <button
+                      type="button"
+                      onClick={() => addHeading(2)}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      H2
+                  </button>
+                  <button
+                      type="button"
+                      onClick={() => addHeading(3)}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      H3
+                  </button>
+
+                  {/* Lists */}
+                  <button
+                      type="button"
+                      onClick={addList}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      • List
+                  </button>
+
+                  <button
+                      type="button"
+                      onClick={addOrderedList}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      1. List
+                  </button>
+
+                  {/* Alignment */}
+                  <button
+                      type="button"
+                      onClick={addAlignLeft}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Left
+                  </button>
+
+                  <button
+                      type="button"
+                      onClick={addAlignCenter}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Center
+                  </button>
+
+                  <button
+                      type="button"
+                      onClick={addAlignRight}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Right
+                  </button>
+
+                  <button
+                      type="button"
+                      onClick={addAlignJustify}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Justify
+                  </button>
+
+                  {/* Quote */}
+                  <button
+                      type="button"
+                      onClick={addQuote}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Quote
+                  </button>
+
+                  {/* HR */}
+                  <button
+                      type="button"
+                      onClick={addHR}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      HR
+                  </button>
+
+                  {/* Code */}
+                  <button
+                      type="button"
+                      onClick={addCode}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Code
+                  </button>
+
+                  <button
+                      type="button"
+                      onClick={addCodeBlock}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Code Block
+                  </button>
+
+                  {/* Link */}
+                  <button
+                      type="button"
+                      onClick={() => openPopup("link")}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Link
+                  </button>
+
+                  {/* Image */}
+                  <button
+                      type="button"
+                      onClick={() => openPopup("image")}
+                      className="px-3 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm"
+                  >
+                      Image
+                  </button>
+              </div>
+
+              {/* TEXTAREA */}
+              <textarea
+                  ref={textareaRef}
+                  value={data.content}
+                  onChange={(e) => setData("content", e.target.value)}
+                  className="w-full border border-gray-300 rounded-b-xl bg-white p-4 min-h-[300px] font-mono text-sm"
+              />
           </div>
 
           {/* STATUS */}

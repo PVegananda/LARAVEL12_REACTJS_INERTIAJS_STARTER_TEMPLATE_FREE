@@ -1,17 +1,18 @@
-// resources/js/components/ThemeToggle.tsx
-import { useTheme } from "@/hooks/useTheme";
+import useTheme from "@/hooks/useTheme";
 
 export default function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button
-      type="button"
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="px-3 py-1 rounded-lg border border-gray-400 dark:border-gray-600
-                 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+      onClick={toggleTheme}
+      className="
+        px-4 py-2 rounded-lg text-sm font-semibold
+        transition bg-gray-200 dark:bg-gray-700 
+        text-gray-900 dark:text-white hover:opacity-80
+      "
     >
-      {theme === "light" ? "🌙 Dark" : "☀️ Light"}
+      {theme === "light" ? "Dark Mode" : "Light Mode"}
     </button>
   );
 }

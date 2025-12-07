@@ -1,22 +1,25 @@
-// resources/js/hooks/useTheme.ts
 import { useEffect, useState } from "react";
 
-export function useTheme() {
-  const [theme, setTheme] = useState<string>(
-    typeof window !== "undefined"
-      ? localStorage.getItem("theme") ?? "light"
-      : "light"
-  );
+export default function useTheme() {
+  const [theme, setTheme] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") || "light";
+    }
+    return "light";
+  });
 
   useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    const root = document.documentElement;
+
+    if (theme === "dark") root.classList.add("dark");
+    else root.classList.remove("dark");
 
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  return { theme, setTheme };
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
+
+  return { theme, toggleTheme };
 }

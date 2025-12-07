@@ -83,6 +83,18 @@ class PageController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
+        $related = Post::where('id', '!=', $post->id)
+        ->where('category_id', $post->category_id)
+        ->latest()
+        ->take(3)
+        ->get()
+        ->map(fn ($p) => [
+            'id' => $p->id,
+            'title' => $p->title,
+            'slug' => $p->slug,
+            'thumbnail_url' => $p->thumbnail ? asset("storage/{$p->thumbnail}") : null,
+            'created_at' => $p->created_at,
+        ]);
         $postData = [
             'id' => $post->id,
             'title' => $post->title,
@@ -102,7 +114,9 @@ class PageController extends Controller
 
         return Inertia::render('Posts/Show', [
             'post' => $postData,
+            'related' => $related,
         ]);
+
     }
 
     /**
